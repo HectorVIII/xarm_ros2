@@ -14,7 +14,7 @@
     >
 
     <!-- define property -->
-    <xacro:if value="${mesh_suffix == 'dae' or (model_num >= 1305 and model_num != 1380)}">
+    <xacro:if value="${model_num >= 1305 and model_num != 1380}">
       <xacro:property name="visual_dir" value="xarm7_1305/visual"/>
       <xacro:property name="collision_dir" value="xarm7_1305/collision"/>
       <xacro:property name="add_mesh_suffix" value="false"/>
@@ -22,7 +22,7 @@
       <xacro:property name="link7_visual" value="xarm7_1305/visual/link7"/>
       <xacro:property name="link7_collision" value="xarm7_1305/collision/link7"/>
     </xacro:if>
-    <xacro:unless value="${mesh_suffix == 'dae' or (model_num >= 1305 and model_num != 1380)}">
+    <xacro:unless value="${model_num >= 1305 and model_num != 1380}">
       <xacro:property name="visual_dir" value="xarm7/visual"/>
       <xacro:property name="collision_dir" value="xarm7/visual"/>
       <xacro:property name="add_mesh_suffix" value="true"/>
@@ -277,6 +277,41 @@
         effort="20"
         velocity="3.14" />
       <dynamics damping="2" friction="1" />
+    </joint>
+    <!-- FT sensor link -->
+    <link name="${prefix}ft_sensor_link">
+      <inertial>
+        <origin xyz="0 0 0" rpy="0 0 0" />
+        <mass value="0.2" />
+        <inertia
+          ixx="1e-4" ixy="0"   ixz="0"
+          iyy="1e-4" iyz="0"   izz="1e-4" />
+      </inertial>
+
+      <!-- 圆柱形的 FT 传感器 -->
+      <visual>
+        <!-- 这个 origin 先临时写 0，后面再调高度 -->
+        <origin xyz="0 0 0" rpy="0 0 0" />
+        <geometry>
+          <!-- radius / length 你可以根据实际 FT 传感器尺寸再微调 -->
+          <cylinder radius="0.035" length="0.025"/>
+        </geometry>
+        <material name="${prefix}Silver"/>
+      </visual>
+
+      <collision>
+        <origin xyz="0 0 0" rpy="0 0 0" />
+        <geometry>
+          <cylinder radius="0.03" length="0.03"/>
+        </geometry>
+      </collision>
+    </link>
+    <!-- FT sensor joint: 固定在 link7 上 -->
+    <joint name="${prefix}joint_ft_sensor" type="fixed">
+      <!-- z 轴方向往上（或者往下）挪一点，请你试着调这个数 -->
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <parent link="${prefix}link7" />
+      <child  link="${prefix}ft_sensor_link" />
     </joint>
 
     <!-- <link name="${prefix}link_eef" />

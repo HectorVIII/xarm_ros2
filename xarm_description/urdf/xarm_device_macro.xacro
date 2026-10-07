@@ -41,7 +41,6 @@
     robot_sn:='' 
     mesh_suffix:='stl' 
     kinematics_suffix:=''
-    gripper_version:='G1'
     "
     > 
 
@@ -55,11 +54,11 @@
 
     <!-- Specify Mesh file path -->
     <xacro:property name="mesh_suffix" value="${mesh_suffix}" scope="parent"/>
-    <xacro:if value="${ros2_control_plugin == 'gazebo_ros2_control/GazeboSystem' or ros2_control_plugin == 'ign_ros2_control/IgnitionSystem' or ros2_control_plugin == 'gz_ros2_control/GazeboSimSystem'}">
+    <xacro:if value="${ros2_control_plugin == 'gazebo_ros2_control/GazeboSystem' or ros2_control_plugin == 'ign_ros2_control/IgnitionSystem'}">
       <!-- gazebo use -->
       <xacro:property name="mesh_path" value="file://$(find xarm_description)/meshes" scope="parent"/>
     </xacro:if>
-    <xacro:unless value="${ros2_control_plugin == 'gazebo_ros2_control/GazeboSystem' or ros2_control_plugin == 'ign_ros2_control/IgnitionSystem' or ros2_control_plugin == 'gz_ros2_control/GazeboSimSystem'}">
+    <xacro:unless value="${ros2_control_plugin == 'gazebo_ros2_control/GazeboSystem' or ros2_control_plugin == 'ign_ros2_control/IgnitionSystem'}">
       <xacro:property name="mesh_path" value="package://xarm_description/meshes" scope="parent"/>
     </xacro:unless> 
 
@@ -217,21 +216,8 @@
       <xacro:include filename="$(find xarm_description)/urdf/camera/realsense_d435i.urdf.xacro" />
       <xacro:d435i_urdf prefix="${prefix}" add_d435i_links="${add_d435i_links}" />
       <xacro:if value="${add_d435i_links}">
-        <xacro:include filename="$(find xarm_description)/urdf/camera/realsense.gazebo.xacro" />
-        <xacro:if value="${is_ros2}">
-          <xacro:if value="${ros2_control_plugin == 'gz_ros2_control/GazeboSimSystem'}">
-            <xacro:realsense_gz prefix="${prefix}" />
-          </xacro:if>
-          <xacro:if value="${ros2_control_plugin == 'ign_ros2_control/IgnitionSystem'}">
-            <xacro:realsense_ignition prefix="${prefix}" />
-          </xacro:if>
-          <xacro:if value="${ros2_control_plugin == 'gazebo_ros2_control/GazeboSystem'}">
-            <xacro:realsense_gazebo prefix="${prefix}" />
-          </xacro:if>
-        </xacro:if>
-        <xacro:unless value="${is_ros2}">
-          <xacro:realsense_gazebo prefix="${prefix}" />
-        </xacro:unless>
+        <xacro:include filename="$(find xarm_description)/urdf/camera/realsense.gazebo.xacro" />    
+        <xacro:realsense_gazebo prefix="${prefix}" />
       </xacro:if>
     </xacro:if>
     <xacro:unless value="${add_realsense_d435i}">
@@ -246,17 +232,20 @@
     <xacro:if value="${add_gripper}">
       <xacro:if value="${robot_type == 'lite'}">
         <!-- Load Lite Gripper Model URDF -->
-        <xacro:include filename="$(find xarm_description)/urdf/gripper/uflite_gripper_macro.xacro" />
-        <xacro:uflite_gripper_macro prefix="${prefix}" attach_to="${prefix}link_eef" 
-          ros2_control_plugin="${ros2_control_plugin}" dof="${dof}" hard_interface="${hard_interface}" 
-          gripper_version="${gripper_version}" />
+        <xacro:include filename="$(find xarm_description)/urdf/gripper/lite_gripper.urdf.xacro" />
+        <xacro:uflite_gripper_urdf prefix="${prefix}" attach_to="${prefix}link_eef" />
       </xacro:if>
       <xacro:unless value="${robot_type == 'lite'}">
         <!-- Load XArm Gripper Model URDF -->
         <xacro:include filename="$(find xarm_description)/urdf/gripper/xarm_gripper_macro.xacro" />
-        <xacro:xarm_gripper_macro prefix="${prefix}" attach_to="${prefix}link_eef" 
-          ros2_control_plugin="${ros2_control_plugin}" dof="${dof}" hard_interface="${hard_interface}" 
-          gripper_version="${gripper_version}" />
+        <!-- attach_xyz="0 0 0.052" accounts for the FT sensor stacked between
+             link_eef (robot flange) and the xArm gripper. With this offset
+             link_tcp ends up 0.224 m from the flange, matching Studio's TCP
+             setting and removing the need for a runtime tcp_z_offset_m
+             compensation in xarm_controller_node. -->
+        <xacro:xarm_gripper_macro prefix="${prefix}" attach_to="${prefix}link_eef"
+          attach_xyz="0 0 0.052"
+          ros2_control_plugin="${ros2_control_plugin}" dof="${dof}" hard_interface="${hard_interface}" />
       </xacro:unless>
     </xacro:if>
 
@@ -265,8 +254,7 @@
         <!-- Load BIO Gripper Model URDF -->
         <xacro:include filename="$(find xarm_description)/urdf/gripper/bio_gripper_macro.xacro" />
         <xacro:bio_gripper_macro prefix="${prefix}" attach_to="${prefix}link_eef" 
-          ros2_control_plugin="${ros2_control_plugin}" dof="${dof}" hard_interface="${hard_interface}" 
-          gripper_version="${gripper_version}" />
+          ros2_control_plugin="${ros2_control_plugin}" dof="${dof}" hard_interface="${hard_interface}" />
       </xacro:unless>
     </xacro:if>
 

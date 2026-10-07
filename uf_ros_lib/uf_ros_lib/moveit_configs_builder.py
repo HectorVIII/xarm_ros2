@@ -88,10 +88,6 @@ DualMoveItConfigsBuilder(
         model1300_2=False
         robot_sn_1=''
         robot_sn_2=''
-        attach_xyz_1='0 0 0'
-        attach_rpy_1='0 0 0'
-        attach_xyz_2='0 1 0'
-        attach_rpy_2='0 0 0'
         kinematics_suffix_1=''
         kinematics_suffix_2=''
         add_realsense_d435i_1=False
@@ -257,7 +253,6 @@ class MoveItConfigsBuilder(ParameterBuilder):
         kinematics_suffix = get_param_str('kinematics_suffix', '')
         ros2_control_plugin = get_param_str('ros2_control_plugin', 'uf_robot_hardware/UFRobotSystemHardware')
         ros2_control_params = get_param_str('ros2_control_params', '')
-        gripper_version = get_param_str('gripper_version', 'G1')
         add_gripper = get_param_str('add_gripper', False)
         add_vacuum_gripper = get_param_str('add_vacuum_gripper', False)
         add_bio_gripper = get_param_str('add_bio_gripper', False)
@@ -305,7 +300,6 @@ class MoveItConfigsBuilder(ParameterBuilder):
             'kinematics_suffix': kinematics_suffix,
             'ros2_control_plugin': ros2_control_plugin,
             'ros2_control_params': ros2_control_params,
-            'gripper_version': gripper_version,
             'add_gripper': add_gripper,
             'add_vacuum_gripper': add_vacuum_gripper,
             'add_bio_gripper': add_bio_gripper,
@@ -463,7 +457,7 @@ class MoveItConfigsBuilder(ParameterBuilder):
                 file_path = self._package_path / file_path
                 joint_limits = load_yaml(file_path) if file_path else {}
             joint_limits = joint_limits if joint_limits else {}
-            if self.__add_gripper in ('True', 'true'):
+            if self.__robot_type != 'lite' and self.__add_gripper in ('True', 'true'):
                 gripper_joint_limits_yaml = load_yaml(self._package_path / 'config' / '{}_gripper'.format(self.__robot_type) / 'joint_limits.yaml')
                 if gripper_joint_limits_yaml and 'joint_limits' in gripper_joint_limits_yaml:
                     joint_limits['joint_limits'].update(gripper_joint_limits_yaml['joint_limits'])
@@ -533,7 +527,7 @@ class MoveItConfigsBuilder(ParameterBuilder):
             else:
                 file_path = self._package_path / file_path
                 controllers_yaml = load_yaml(file_path) if file_path else {}
-            if self.__add_gripper in ('True', 'true'):
+            if self.__robot_type != 'lite' and self.__add_gripper in ('True', 'true'):
                 gripper_controllers_yaml = load_yaml(self._package_path / 'config' / '{}_gripper'.format(self.__robot_type) / controllers_name)
                 if gripper_controllers_yaml and 'controller_names' in gripper_controllers_yaml:
                     for name in gripper_controllers_yaml['controller_names']:
@@ -692,7 +686,7 @@ class MoveItConfigsBuilder(ParameterBuilder):
                 else:
                     pipeline_planning_yaml = {}
                 
-                if self.__add_gripper in ('True', 'true'):
+                if self.__robot_type != 'lite' and self.__add_gripper in ('True', 'true'):
                     parameter_file = self._package_path / 'config' / '{}_gripper'.format(self.__robot_type) / filename
                     if parameter_file.exists():
                         gripper_planning_yaml = load_yaml(parameter_file)
@@ -893,19 +887,12 @@ class DualMoveItConfigsBuilder(ParameterBuilder):
         robot_sn = get_param_str('robot_sn', '')
         robot_sn_1 = get_param_str('robot_sn_1', robot_sn)
         robot_sn_2 = get_param_str('robot_sn_2', robot_sn)
-        attach_xyz_1 = get_list_param_str('attach_xyz_1', '0 0 0')
-        attach_rpy_1 = get_list_param_str('attach_rpy_1', '0 0 0')
-        attach_xyz_2 = get_list_param_str('attach_xyz_2', '0 1 0')
-        attach_rpy_2 = get_list_param_str('attach_rpy_2', '0 0 0')
         mesh_suffix = get_param_str('mesh_suffix', 'stl')
         kinematics_suffix = get_param_str('kinematics_suffix', '')
         kinematics_suffix_1 = get_param_str('kinematics_suffix_1', kinematics_suffix)
         kinematics_suffix_2 = get_param_str('kinematics_suffix_2', kinematics_suffix)
         ros2_control_plugin = get_param_str('ros2_control_plugin', 'uf_robot_hardware/UFRobotSystemHardware')
         ros2_control_params = get_param_str('ros2_control_params', '')
-        gripper_version = get_param_str('gripper_version', 'G1')
-        gripper_version_1 = get_param_str('gripper_version_1', gripper_version)
-        gripper_version_2 = get_param_str('gripper_version_2', gripper_version)
         add_gripper = get_param_str('add_gripper', False)
         add_gripper_1 = get_param_str('add_gripper_1', add_gripper)
         add_gripper_2 = get_param_str('add_gripper_2', add_gripper)
@@ -993,17 +980,11 @@ class DualMoveItConfigsBuilder(ParameterBuilder):
             'model1300_2': model1300_2,
             'robot_sn_1': robot_sn_1,
             'robot_sn_2': robot_sn_2,
-            'attach_xyz_1': attach_xyz_1,
-            'attach_rpy_1': attach_rpy_1,
-            'attach_xyz_2': attach_xyz_2,
-            'attach_rpy_2': attach_rpy_2,
             'mesh_suffix': mesh_suffix,
             'kinematics_suffix_1': kinematics_suffix_1,
             'kinematics_suffix_2': kinematics_suffix_2,
             'ros2_control_plugin': ros2_control_plugin,
             'ros2_control_params': ros2_control_params,
-            'gripper_version_1': gripper_version_1,
-            'gripper_version_2': gripper_version_2,
             'add_gripper_1': add_gripper_1,
             'add_gripper_2': add_gripper_2,
             'add_vacuum_gripper_1': add_vacuum_gripper_1,
@@ -1206,7 +1187,7 @@ class DualMoveItConfigsBuilder(ParameterBuilder):
                 joint_limits_2 = load_yaml(file_path_2) if file_path_2 else {}
             joint_limits_1 = joint_limits_1 if joint_limits_1 else {}
             joint_limits_2 = joint_limits_2 if joint_limits_2 else {}
-            if self.__add_gripper_1 in ('True', 'true'):
+            if self.__robot_type_1 != 'lite' and self.__add_gripper_1 in ('True', 'true'):
                 gripper_joint_limits_yaml = load_yaml(self._package_path / 'config' / '{}_gripper'.format(self.__robot_type_1) / 'joint_limits.yaml')
                 if gripper_joint_limits_yaml and 'joint_limits' in gripper_joint_limits_yaml:
                     joint_limits_1['joint_limits'].update(gripper_joint_limits_yaml['joint_limits'])
@@ -1218,7 +1199,7 @@ class DualMoveItConfigsBuilder(ParameterBuilder):
                 for name in list(joint_limits_1['joint_limits']):
                     joint_limits_1['joint_limits']['{}{}'.format(self.__prefix_1, name)] = joint_limits_1['joint_limits'].pop(name)
             
-            if self.__add_gripper_2 in ('True', 'true'):
+            if self.__robot_type_2 != 'lite' and self.__add_gripper_2 in ('True', 'true'):
                 gripper_joint_limits_yaml = load_yaml(self._package_path / 'config' / '{}_gripper'.format(self.__robot_type_1) / 'joint_limits.yaml')
                 if gripper_joint_limits_yaml and 'joint_limits' in gripper_joint_limits_yaml:
                     joint_limits_2['joint_limits'].update(gripper_joint_limits_yaml['joint_limits'])
@@ -1309,7 +1290,7 @@ class DualMoveItConfigsBuilder(ParameterBuilder):
                 controllers_yaml_2 = load_yaml(file_path_2) if file_path_2 else {}
                 controllers_yaml_1 = controllers_yaml_1 if controllers_yaml_1 else {}
                 controllers_yaml_2 = controllers_yaml_2 if controllers_yaml_2 else {}
-            if self.__add_gripper_1 in ('True', 'true'):
+            if self.__robot_type_1 != 'lite' and self.__add_gripper_1 in ('True', 'true'):
                 gripper_controllers_yaml = load_yaml(self._package_path / 'config' / '{}_gripper'.format(self.__robot_type_1) / controllers_name)
                 if gripper_controllers_yaml and 'controller_names' in gripper_controllers_yaml:
                     for name in gripper_controllers_yaml['controller_names']:
@@ -1326,7 +1307,7 @@ class DualMoveItConfigsBuilder(ParameterBuilder):
                                 controllers_yaml_1['controller_names'].append(name)
                             controllers_yaml_1[name] = gripper_controllers_yaml[name]
 
-            if self.__add_gripper_2 in ('True', 'true'):
+            if self.__robot_type_2 != 'lite' and self.__add_gripper_2 in ('True', 'true'):
                 gripper_controllers_yaml = load_yaml(self._package_path / 'config' / '{}_gripper'.format(self.__robot_type_2) / controllers_name)
                 if gripper_controllers_yaml and 'controller_names' in gripper_controllers_yaml:
                     for name in gripper_controllers_yaml['controller_names']:
@@ -1519,7 +1500,7 @@ class DualMoveItConfigsBuilder(ParameterBuilder):
                     parameter_file = config_folder_1 / filename
                     planning_yaml_1 = load_yaml(parameter_file)
                     planning_yaml_1 = planning_yaml_1 if planning_yaml_1 else {}
-                    if self.__add_gripper_1 in ('True', 'true'):
+                    if self.__robot_type_1 != 'lite' and self.__add_gripper_1 in ('True', 'true'):
                         parameter_file = self._package_path / 'config' / '{}_gripper'.format(self.__robot_type_1) / filename
                         if parameter_file.exists():
                             gripper_planning_yaml = load_yaml(parameter_file)
@@ -1541,7 +1522,7 @@ class DualMoveItConfigsBuilder(ParameterBuilder):
                     planning_yaml_2 = load_yaml(parameter_file)
                     planning_yaml_2 = planning_yaml_2 if planning_yaml_2 else {}
                                 
-                    if self.__add_gripper_2 in ('True', 'true'):
+                    if self.__robot_type_2 != 'lite' and self.__add_gripper_2 in ('True', 'true'):
                         parameter_file = self._package_path / 'config' / '{}_gripper'.format(self.__robot_type_2) / filename
                         if parameter_file.exists():
                             gripper_planning_yaml = load_yaml(parameter_file)

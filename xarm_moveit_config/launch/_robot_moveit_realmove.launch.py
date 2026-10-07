@@ -39,7 +39,6 @@ def launch_setup(context, *args, **kwargs):
     attach_rpy = LaunchConfiguration('attach_rpy', default='"0 0 0"')
     mesh_suffix = LaunchConfiguration('mesh_suffix', default='stl')
     kinematics_suffix = LaunchConfiguration('kinematics_suffix', default='')
-    gripper_version = LaunchConfiguration('gripper_version', default='G1')
 
     add_gripper = LaunchConfiguration('add_gripper', default=False)
     add_vacuum_gripper = LaunchConfiguration('add_vacuum_gripper', default=False)
@@ -98,7 +97,6 @@ def launch_setup(context, *args, **kwargs):
         kinematics_suffix=kinematics_suffix,
         ros2_control_plugin=ros2_control_plugin,
         ros2_control_params=ros2_control_params,
-        gripper_version=gripper_version,
         add_gripper=add_gripper,
         add_vacuum_gripper=add_vacuum_gripper,
         add_bio_gripper=add_bio_gripper,
@@ -116,7 +114,16 @@ def launch_setup(context, *args, **kwargs):
         geometry_mesh_origin_rpy=geometry_mesh_origin_rpy,
         geometry_mesh_tcp_xyz=geometry_mesh_tcp_xyz,
         geometry_mesh_tcp_rpy=geometry_mesh_tcp_rpy,
-        
+
+    ).planning_pipelines(
+        # Force-load both OMPL and Pilz Industrial Motion Planner. The
+        # builder's auto-discovery only looks at config/<robot>/, where
+        # pilz_industrial_motion_planner_planning.yaml is NOT present
+        # (it lives under config/moveit_configs/), so without this call
+        # only OMPL would be loaded. Pilz PTP is what xarm_controller_node
+        # actually requests for deterministic point-to-point moves.
+        pipelines=['ompl', 'pilz_industrial_motion_planner'],
+        default_planning_pipeline='pilz_industrial_motion_planner',
     ).to_moveit_configs()
     
     # robot description launch

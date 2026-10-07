@@ -7,7 +7,7 @@
 # Author: Vinman <vinman.wen@ufactory.cc> <vinman.cub@gmail.com>
 
 from launch import LaunchDescription
-from launch.actions import IncludeLaunchDescription
+from launch.actions import DeclareLaunchArgument, IncludeLaunchDescription
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch.substitutions import LaunchConfiguration, PathJoinSubstitution
 from launch_ros.substitutions import FindPackageShare
@@ -15,6 +15,7 @@ from launch_ros.substitutions import FindPackageShare
 
 def generate_launch_description():
     robot_ip = LaunchConfiguration('robot_ip')
+    add_gripper = LaunchConfiguration('add_gripper')
     hw_ns = LaunchConfiguration('hw_ns', default='xarm')
     
     # robot moveit realmove launch
@@ -25,11 +26,17 @@ def generate_launch_description():
             'robot_ip': robot_ip,
             'dof': '7',
             'robot_type': 'xarm',
+            'add_gripper': add_gripper,
             'hw_ns': hw_ns,
             'no_gui_ctrl': 'false',
         }.items(),
     )
     
     return LaunchDescription([
+        DeclareLaunchArgument(
+            'add_gripper',
+            default_value='false',
+            description='Mount xArm gripper in the MoveIt model',
+        ),
         robot_moveit_realmove_launch
     ])
