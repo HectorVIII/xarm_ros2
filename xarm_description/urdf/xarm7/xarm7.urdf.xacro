@@ -288,13 +288,15 @@
           iyy="1e-4" iyz="0"   izz="1e-4" />
       </inertial>
 
-      <!-- 圆柱形的 FT 传感器 -->
+      <!-- 圆柱形的 FT 传感器（含转接法兰）
+           填满法兰 (link7 / link_eef, z=0) 到夹爪 (attach_xyz z=0.052, 见
+           xarm_device_macro.xacro) 之间的 52 mm：中心 z=0.026，长 0.052。
+           半径 0.0375 (Φ75 mm) 为估计值，按实物再微调。
+           只改 visual；collision 保持原样，避免改变 MoveIt 的自碰撞检查。 -->
       <visual>
-        <!-- 这个 origin 先临时写 0，后面再调高度 -->
-        <origin xyz="0 0 0" rpy="0 0 0" />
+        <origin xyz="0 0 0.026" rpy="0 0 0" />
         <geometry>
-          <!-- radius / length 你可以根据实际 FT 传感器尺寸再微调 -->
-          <cylinder radius="0.035" length="0.025"/>
+          <cylinder radius="0.0375" length="0.052"/>
         </geometry>
         <material name="${prefix}Silver"/>
       </visual>
