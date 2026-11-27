@@ -137,6 +137,9 @@ def launch_setup(context, *args, **kwargs):
             robot_params,
         ],
         output='screen',
+        # default info; rsn handover.launch.py passes ros2_control_log_level:=warn
+        arguments=['--ros-args', '--log-level',
+                   LaunchConfiguration('ros2_control_log_level', default='info')],
     )
 
     return [

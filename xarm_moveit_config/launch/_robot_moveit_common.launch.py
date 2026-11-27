@@ -242,6 +242,9 @@ def launch_setup(context, *args, **kwargs):
         package='moveit_ros_move_group',
         executable='move_group',
         output='screen',
+        # default info; rsn handover.launch.py passes moveit_log_level:=warn
+        arguments=['--ros-args', '--log-level',
+                   LaunchConfiguration('moveit_log_level', default='info')],
         parameters=[
             robot_description_parameters,
             ompl_planning_pipeline_config,
